@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento Online | Eduarda Souza Estética</title>
+
+  <!-- Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- Header do Salão -->
+  <header class="header">
+    <div class="brand-logo-wrapper">
+      <img src="images/logo.jpg" alt="Eduarda Souza Estética" class="brand-logo">
+    </div>
+    <h1 id="studioName">Eduarda Souza</h1>
+    <div class="subtitle">ESTÉTICA</div>
+    <p class="tagline">Realce sua beleza natural com especialistas no olhar</p>
+    <div class="badge-tag">
+      <i class="fa-solid fa-sparkles"></i> Agendamento Simples & Rápido
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Stepper de Progresso -->
+    <div class="stepper">
+      <div class="step-item active" id="stepIndicator1">
+        <div class="step-number">1</div>
+        <span>Serviço</span>
+      </div>
+      <div class="step-item" id="stepIndicator2">
+        <div class="step-number">2</div>
+        <span>Data & Hora</span>
+      </div>
+      <div class="step-item" id="stepIndicator3">
+        <div class="step-number">3</div>
+        <span>Confirmação</span>
+      </div>
+    </div>
+
+    <!-- ETAPA 1: SELEÇÃO DE SERVIÇO -->
+    <section id="step1" class="card-box">
+      <h2 class="section-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Escolha o procedimento desejado</h2>
+
+      <!-- Abas de Categoria -->
+      <div class="category-tabs" id="categoryTabs">
+        <button class="category-tab active" onclick="filterCategory('Todos')">Todos</button>
+        <button class="category-tab" onclick="filterCategory('Sobrancelhas')">Sobrancelhas</button>
+        <button class="category-tab" onclick="filterCategory('Cílios')">Cílios</button>
+        <button class="category-tab" onclick="filterCategory('Pele')">Pele</button>
+        <button class="category-tab" onclick="filterCategory('Combos')">Combos Especiais</button>
+      </div>
+
+      <!-- Grid de Serviços -->
+      <div class="services-grid" id="servicesContainer">
+        <!-- Renderizado dinamicamente pelo app.js -->
+      </div>
+
+      <div style="margin-top: 25px;">
+        <button class="btn btn-primary" id="btnGoToStep2" onclick="goToStep(2)" disabled>
+          Próximo Passo <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ETAPA 2: SELEÇÃO DE DATA E HORÁRIO -->
+    <section id="step2" class="card-box" style="display: none;">
+      <h2 class="section-title"><i class="fa-regular fa-calendar-check"></i> Selecione Data e Horário</h2>
+
+      <!-- Resumo Rápido do Serviço Selecionado -->
+      <div class="summary-box" id="selectedServiceSummary"></div>
+
+      <div class="date-picker-group">
+        <label class="form-label" for="appointmentDate"><i class="fa-regular fa-calendar"></i> Data do
+          Atendimento:</label>
+        <input type="date" id="appointmentDate" class="form-control" onchange="onDateChanged()">
+      </div>
+
+      <div>
+        <label class="form-label"><i class="fa-regular fa-clock"></i> Horários Disponíveis:</label>
+        <div id="slotsContainer">
+          <div style="color: #777; font-size: 0.9rem;">Selecione uma data para carregar os horários.</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 25px; display: flex; gap: 10px;">
+        <button class="btn btn-secondary" onclick="goToStep(1)" style="width: 40%;">
+          <i class="fa-solid fa-arrow-left"></i> Voltar
+        </button>
+        <button class="btn btn-primary" id="btnGoToStep3" onclick="goToStep(3)" disabled style="width: 60%;">
+          Continuar <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ETAPA 3: DADOS DO CLIENTE E CONFIRMAÇÃO -->
+    <section id="step3" class="card-box" style="display: none;">
+      <h2 class="section-title"><i class="fa-regular fa-user"></i> Seus Dados para Agendamento</h2>
+
+      <div class="summary-box" id="finalSummaryBox"></div>
+
+      <form id="bookingForm" onsubmit="submitBooking(event)">
+        <div style="margin-bottom: 15px;">
+          <label class="form-label" for="clientName">Nome Completo *</label>
+          <input type="text" id="clientName" class="form-control" placeholder="Digite seu nome" required>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label class="form-label" for="clientPhone">WhatsApp / Telefone com DDD *</label>
+          <input type="tel" id="clientPhone" class="form-control" placeholder="(11) 99999-9999" required>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label class="form-label" for="clientNotes">Observações / Preferências (opcional)</label>
+          <textarea id="clientNotes" class="form-control" rows="3"
+            placeholder="Alguma sensibilidade ou informação importante?"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)" style="width: 40%;">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitBooking" style="width: 60%;">
+            <i class="fa-solid fa-check-circle"></i> Confirmar Agendamento
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ETAPA 4: SUCESSO -->
+    <section id="stepSuccess" class="card-box success-card" style="display: none;">
+      <div class="success-icon">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h2 style="font-family: 'Playfair Display', serif; color: var(--text-main); margin-bottom: 10px;">Agendamento
+        Confirmado!</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+        Seu horário foi reservado com sucesso em nosso sistema.
+      </p>
+
+      <div class="summary-box" id="successSummary" style="text-align: left;"></div>
+
+      <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 12px;">
+        <a id="btnWhatsAppDirect" href="#" target="_blank" class="btn btn-whatsapp">
+          <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Comprovante no WhatsApp
+        </a>
+        <button class="btn btn-secondary" onclick="resetForm()">
+          Fazer Outro Agendamento
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer style="text-align: center; color: var(--text-muted); font-size: 0.82rem; margin-top: 40px; padding: 20px;">
+    &copy; 2026 Leidiane Silva. Todos os direitos reservados.
+    <br>
+    <a href="admin.html"
+      style="color: var(--primary-color); text-decoration: none; font-weight: 500; display: inline-block; margin-top: 6px;">
+      <i class="fa-solid fa-lock"></i> Área Administrativa
+    </a>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
