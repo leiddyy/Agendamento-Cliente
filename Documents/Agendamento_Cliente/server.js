@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const { runAsync, getAsync, allAsync } = require('./database');
 const { supabase, isSupabaseConfigured } = require('./supabaseClient');
+const { sendTelegramNotification } = require('./telegramService');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -84,6 +85,8 @@ async function fetchSalonData(slug = 'eduarda-souza') {
         logo_url: salon.logo_url || '/images/logo.jpg',
         primary_color: salon.primary_color || '#8A676A',
         whatsapp_number: salon.whatsapp_number || '5511999999999',
+        telegram_bot_token: salon.telegram_bot_token || process.env.TELEGRAM_BOT_TOKEN,
+        telegram_chat_id: salon.telegram_chat_id || process.env.TELEGRAM_CHAT_ID,
         opening_time: settings?.opening_time || '08:00',
         closing_time: settings?.closing_time || '19:00',
         lunch_start: settings?.lunch_start || '12:00',
@@ -107,6 +110,8 @@ async function fetchSalonData(slug = 'eduarda-souza') {
     logo_url: '/images/logo.jpg',
     primary_color: '#8A676A',
     whatsapp_number: settingsMap.whatsapp_number || '5511999999999',
+    telegram_bot_token: settingsMap.telegram_bot_token || process.env.TELEGRAM_BOT_TOKEN,
+    telegram_chat_id: settingsMap.telegram_chat_id || process.env.TELEGRAM_CHAT_ID,
     opening_time: settingsMap.opening_time || '08:00',
     closing_time: settingsMap.closing_time || '19:00',
     lunch_start: settingsMap.lunch_start || '12:00',
@@ -115,27 +120,6 @@ async function fetchSalonData(slug = 'eduarda-souza') {
   };
 }
 
-// Helper para enviar notificação no Telegram
-async function sendTelegramNotification(message) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
-
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown'
-      })
-    });
-  } catch (err) {
-    console.error('Erro ao enviar Telegram:', err);
-  }
-}
 
 
 // ==========================================
@@ -169,19 +153,6 @@ app.get('/api/services', async (req, res) => {
         .order('name');
 
       if (error) throw error;
-      // =========================================================
-      // CÓDIGO NOVO: MONTAR E ENVIAR NOTIFICAÇÃO PARA O TELEGRAM
-      // =========================================================
-      const dataFormatada = date.split('-').reverse().join('/');
-      const msg = `📅 *Novo Agendamento!*\n\n*Cliente:* ${client_name}\n*Serviço:* ${service.name}\n*Data:* ${dataFormatada}\n*Horário:* ${start_time}\n*WhatsApp:* [${client_phone}](https://wa.me/55${client_phone.replace(/\D/g, '')})`;
-
-      sendTelegramNotification(msg);
-      // =========================================================
-
-      return res.status(201).json({
-        message: 'Agendamento realizado com sucesso!',
-        appointment: { ...newApp, service_name: service.name, price: service.price }
-      });
       return res.json(services || []);
     }
 
@@ -383,6 +354,21 @@ app.post('/api/appointments', async (req, res) => {
 
       if (error) throw error;
 
+      // Disparar notificação Telegram para a profissional
+      sendTelegramNotification({
+        studio_name: salonData.studio_name,
+        client_name: client_name.trim(),
+        client_phone: client_phone.trim(),
+        service_name: service.name,
+        date,
+        start_time,
+        end_time,
+        price: service.price,
+        notes: notes ? notes.trim() : '',
+        telegram_bot_token: salonData.telegram_bot_token,
+        telegram_chat_id: salonData.telegram_chat_id
+      }).catch(err => console.error('Erro no envio da notificação do Telegram:', err));
+
       return res.status(201).json({
         message: 'Agendamento realizado com sucesso!',
         appointment: { ...newApp, service_name: service.name, price: service.price }
@@ -403,6 +389,21 @@ app.post('/api/appointments', async (req, res) => {
        WHERE a.id = ?`,
       [result.lastID]
     );
+
+    // Disparar notificação Telegram para a profissional
+    sendTelegramNotification({
+      studio_name: salonData.studio_name,
+      client_name: client_name.trim(),
+      client_phone: client_phone.trim(),
+      service_name: service.name,
+      date,
+      start_time,
+      end_time,
+      price: service.price,
+      notes: notes ? notes.trim() : '',
+      telegram_bot_token: salonData.telegram_bot_token,
+      telegram_chat_id: salonData.telegram_chat_id
+    }).catch(err => console.error('Erro no envio da notificação do Telegram:', err));
 
     res.status(201).json({
       message: 'Agendamento realizado com sucesso!',

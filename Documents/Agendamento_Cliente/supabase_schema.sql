@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS salons (
     logo_url TEXT,
     primary_color VARCHAR(50) DEFAULT '#8A676A',
     whatsapp_number VARCHAR(50) DEFAULT '5511999999999',
+    telegram_bot_token TEXT,
+    telegram_chat_id TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
